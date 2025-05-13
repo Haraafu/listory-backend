@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db } from "../../db";
 import { movieReviews, bookReviews } from "@/schema";
 import { eq } from "drizzle-orm";
 
