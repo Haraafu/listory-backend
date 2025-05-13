@@ -1,5 +1,5 @@
-import { db } from "@/db";
-import { movieWatchlist, bookReadlist, movies, books } from "@/schema";
+import { db } from "../../db";
+import { movieWatchlist, bookReadlist, movies, books } from "../../schema";
 import { and, eq } from "drizzle-orm";
 
 export async function addWatchlist(userId: number, movieId: number) {

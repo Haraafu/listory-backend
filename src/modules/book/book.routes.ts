@@ -1,5 +1,5 @@
 import { Router } from "express";
-import upload from "@/middlewares/upload";
+import upload from "../../middlewares/upload";
 import { getBooks, getBook, postBook, putBook, removeBook, searchBooks } from "./book.controller";
 
 const router = Router();

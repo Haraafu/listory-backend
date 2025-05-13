@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { getMovies, getMovie, postMovie, putMovie, removeMovie, searchMovies } from "./movie.controller";
-import upload from "@/middlewares/upload";
+import upload from "../../middlewares/upload";
 
 const router = Router();
 

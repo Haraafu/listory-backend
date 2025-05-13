@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import { registerUser, loginUser, getAllUsers, getUserById, updateUser, deleteUser } from "./user.service";
-import { AuthenticatedRequest } from "@/middlewares/auth.middleware";
+import { AuthenticatedRequest } from "../../middlewares/auth.middleware";
 import jwt from "jsonwebtoken";
 
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, email, password } = req.body;
 
@@ -11,11 +11,13 @@ export const register = async (req: Request, res: Response) => {
     const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*]{8,}$/;
 
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ success: false, message: "Invalid email format" });
+      res.status(400).json({ success: false, message: "Invalid email format" });
+      return;
     }
 
     if (!passwordRegex.test(password)) {
-      return res.status(400).json({ success: false, message: "Password must be at least 8 characters and include letters and numbers" });
+      res.status(400).json({ success: false, message: "Password must be at least 8 characters and include letters and numbers" });
+      return;
     }
 
     const user = await registerUser(username, email, password);

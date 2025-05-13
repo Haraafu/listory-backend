@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { getAllMovies, getMovieById, createMovie, updateMovie, deleteMovie, searchAndFilterMovies } from "./movie.service";
-import { imagekit } from "@/utils/imagekit";
+import { imagekit } from "../../utils/imagekit";
 
 export const getMovies = async (_: Request, res: Response) => {
   const movies = await getAllMovies();

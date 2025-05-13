@@ -1,5 +1,5 @@
 import { db } from "../../db";
-import { movieReviews, bookReviews } from "@/schema";
+import { movieReviews, bookReviews } from "../../schema";
 import { eq } from "drizzle-orm";
 
 export const addMovieReview = async (userId: number, movieId: number, rating: number, review: string) => {

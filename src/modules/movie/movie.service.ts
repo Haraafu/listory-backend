@@ -1,5 +1,5 @@
 import { db } from "../../db";
-import { movieReviews, movies } from "@/schema";
+import { movieReviews, movies } from "../../schema";
 import { sql, and, ilike, eq, gte, asc, desc } from "drizzle-orm";
 
 export async function getAllMovies() {

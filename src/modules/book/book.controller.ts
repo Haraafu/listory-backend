@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { getAllBooks, getBookById, createBook, updateBook, deleteBook, searchAndFilterBooks } from "./book.service";
-import { imagekit } from "@/utils/imagekit";
+import { imagekit } from "../../utils/imagekit";
 
 export const getBooks = async (_: Request, res: Response): Promise<void> => {
   const books = await getAllBooks();
