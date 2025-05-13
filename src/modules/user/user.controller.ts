@@ -6,6 +6,18 @@ import jwt from "jsonwebtoken";
 export const register = async (req: Request, res: Response) => {
   try {
     const { username, email, password } = req.body;
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d!@#$%^&*]{8,}$/;
+
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: "Invalid email format" });
+    }
+
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({ success: false, message: "Password must be at least 8 characters and include letters and numbers" });
+    }
+
     const user = await registerUser(username, email, password);
     res.status(201).json({ success: true, message: "User registered", data: user });
   } catch (err: any) {
