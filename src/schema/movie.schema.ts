@@ -9,5 +9,6 @@ export const movies = pgTable("movies", {
   rating: real("rating"),
   genre: text("genre").array().notNull(),
   cast: text("cast").array(),
-  posterUrl: varchar("poster_url", { length: 255 })
+  posterUrl: varchar("poster_url", { length: 255 }),
+  linkYoutube: varchar("link_youtube", { length: 255 }),
 });

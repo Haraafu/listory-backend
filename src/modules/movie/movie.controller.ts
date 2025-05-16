@@ -31,30 +31,48 @@ export const getMovie = async (req: Request, res: Response): Promise<void> => {
 export const postMovie = async (req: Request, res: Response): Promise<void> => {
   try {
     const file = req.file;
+    let posterUrl: string | undefined;
 
-    if (!file) {
-      res.status(400).json({ success: false, message: "No file uploaded" });
-      return;
+    if (file) {
+      const base64File = file.buffer.toString("base64");
+      const mimeType = file.mimetype;
+
+      const uploadResponse = await imagekit.upload({
+        file: `data:${mimeType};base64,${base64File}`,
+        fileName: file.originalname,
+        folder: "/listory/movies",
+      });
+
+      posterUrl = uploadResponse.url;
     }
 
-    const uploadResponse = await imagekit.upload({
-      file: file.buffer,
-      fileName: file.originalname,
-      folder: "/listory/movies",
-    });
+    const {
+      title,
+      director,
+      genre,
+      synopsis,
+      releaseYear,
+      rating,
+      linkYoutube
+    } = req.body;
 
     const movie = await createMovie({
-      ...req.body,
-      posterUrl: uploadResponse.url,
+      title,
+      director,
+      genre: genre.split(',').map(g => g.trim()),
+      synopsis,
+      releaseYear: releaseYear ? Number(releaseYear) : undefined,
+      rating: rating ? Number(rating) : undefined,
+      posterUrl, 
+      linkYoutube: linkYoutube ?? null,
     });
 
     res.status(201).json({ success: true, data: movie });
   } catch (error: any) {
     console.error("Upload error:", error);
-    res.status(500).json({ success: false, message: "Upload failed" });
+    res.status(500).json({ success: false, message: "Upload failed", error: error.message });
   }
 };
-
 
 export const putMovie = async (req: Request, res: Response): Promise<void> => {
   try {
