@@ -9,6 +9,7 @@ export async function getAllBooks() {
       title: books.title,
       author: books.author,
       publisher: books.publisher,
+      description: books.description,
       genre: books.genre,
       rating: books.rating,
       releaseYear: books.releaseYear,
@@ -27,11 +28,11 @@ export async function getBookById(id: number) {
       title: books.title,
       author: books.author,
       publisher: books.publisher,
+      description: books.description,
       genre: books.genre,
       rating: books.rating,
       releaseYear: books.releaseYear,
       coverUrl: books.coverUrl,
-      description: books.description,
     })
     .from(books)
     .where(eq(books.id, id));
@@ -50,7 +51,7 @@ export async function createBook(data: {
   title: string;
   author: string;
   publisher?: string;
-  synopsis?: string;
+  description?: string;
   releaseYear?: number;
   rating?: number;
   genre?: string[];
@@ -60,7 +61,7 @@ export async function createBook(data: {
   return result[0];
 }
 
-export async function updateBook(id: number, data: Partial<typeof books["_"]["columns"]>) {
+export async function updateBook(id: number, data: Partial<typeof books.$inferInsert>) {
   const result = await db.update(books).set(data).where(eq(books.id, id)).returning();
   return result[0];
 }
@@ -109,6 +110,7 @@ export async function searchAndFilterBooks(query: {
       title: books.title,
       author: books.author,
       publisher: books.publisher,
+      description: books.description,
       genre: books.genre,
       rating: books.rating,
       releaseYear: books.releaseYear,
@@ -121,9 +123,7 @@ export async function searchAndFilterBooks(query: {
     .where(whereClauses.length ? and(...whereClauses) : undefined);
 
   if (sort === "rating" || sort === "releaseYear") {
-    dbQuery.orderBy(
-      order === "desc" ? desc(books[sort]) : asc(books[sort])
-    );
+    dbQuery.orderBy(order === "desc" ? desc(books[sort]) : asc(books[sort]));
   }
 
   return await dbQuery;

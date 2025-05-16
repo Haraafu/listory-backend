@@ -25,57 +25,45 @@ export const postBook = async (req: Request, res: Response): Promise<void> => {
     if (file) {
       const base64File = file.buffer.toString("base64");
       const mimeType = file.mimetype;
-
       const uploadResponse = await imagekit.upload({
         file: `data:${mimeType};base64,${base64File}`,
         fileName: file.originalname,
         folder: "/listory/books",
       });
-
       coverUrl = uploadResponse.url;
     }
 
-    // Destructure & parse
     const {
       title,
       author,
       publisher,
-      genre,
+      description,
       releaseYear,
       rating,
-      synopsis
+      genre
     } = req.body;
 
     const book = await createBook({
       title,
       author,
       publisher,
-      synopsis,
-      genre: genre?.split(',').map((g: string) => g.trim()) ?? [],
-      releaseYear: releaseYear ? Number(releaseYear) : undefined,
+      description,
+      releaseYear: releaseYear !== undefined && releaseYear !== null && releaseYear !== "" ? Number(releaseYear) : undefined,
       rating: rating ? Number(rating) : undefined,
-      coverUrl: coverUrl ?? "https://example.com/default-cover.jpg",
+      genre: genre ? genre.split(',').map((g: string) => g.trim()) : [],
+      coverUrl,
     });
 
     res.status(201).json({ success: true, data: book });
   } catch (error: any) {
-    console.error("Book upload error:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to upload book",
-      error: error?.message || "Unknown error"
-    });
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to upload book", error: error.message });
   }
 };
 
 export const putBook = async (req: Request, res: Response): Promise<void> => {
   try {
     const id = Number(req.params.id);
-    if (isNaN(id)) {
-      res.status(400).json({ success: false, message: "Invalid book ID" });
-      return;
-    }
-
     const existing = await getBookById(id);
     if (!existing) {
       res.status(404).json({ success: false, message: "Book not found" });
@@ -85,26 +73,43 @@ export const putBook = async (req: Request, res: Response): Promise<void> => {
     let coverUrl = existing.coverUrl;
 
     if (req.file) {
+      const base64File = req.file.buffer.toString("base64");
+      const mimeType = req.file.mimetype;
       const uploadResponse = await imagekit.upload({
-        file: req.file.buffer,
+        file: `data:${mimeType};base64,${base64File}`,
         fileName: req.file.originalname,
         folder: "/listory/books",
       });
       coverUrl = uploadResponse.url;
     }
 
+    const {
+      title,
+      author,
+      publisher,
+      description,
+      releaseYear,
+      rating,
+      genre
+    } = req.body;
+
     const updated = await updateBook(id, {
-      ...req.body,
+      title,
+      author,
+      publisher,
+      description,
+      releaseYear: releaseYear ? Number(releaseYear) : undefined,
+      rating: rating ? Number(rating) : undefined,
+      genre: genre ? genre.split(',').map((g: string) => g.trim()) : [],
       coverUrl,
     });
 
     res.status(200).json({ success: true, data: updated });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Failed to update book" });
+    res.status(500).json({ success: false, message: "Failed to update book", error: error.message });
   }
 };
-
 
 export const removeBook = async (req: Request, res: Response): Promise<void> => {
   const id = parseInt(req.params.id);
