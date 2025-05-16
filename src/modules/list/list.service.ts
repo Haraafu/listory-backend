@@ -1,6 +1,6 @@
 import { db } from "../../db";
-import { movieWatchlist, bookReadlist, movies, books, users } from "../../schema";
-import { and, eq } from "drizzle-orm";
+import { movieWatchlist, bookReadlist, movies, books, users, movieReviews, bookReviews } from "../../schema";
+import { and, eq, sql } from "drizzle-orm";
 
 export async function addWatchlist(userId: number, movieId: number) {
   const user = await db.select().from(users).where(eq(users.id, userId));
@@ -30,16 +30,24 @@ export async function addWatchlist(userId: number, movieId: number) {
 }
 
 export async function getUserWatchlist(userId: number) {
-  return await db.select({
-    id: movies.id,
-    title: movies.title,
-    director: movies.director,
-    genre: movies.genre,
-    rating: movies.rating
-  })
+  return await db
+    .select({
+      id: movies.id,
+      title: movies.title,
+      director: movies.director,
+      genre: movies.genre,
+      cast: movies.cast,
+      synopsis: movies.synopsis,
+      releaseYear: movies.releaseYear,
+      rating: sql<number>`COALESCE(AVG(${movieReviews.rating}), ${movies.rating})`.mapWith(Number),
+      posterUrl: movies.posterUrl,
+      linkYoutube: movies.linkYoutube,
+    })
     .from(movieWatchlist)
     .innerJoin(movies, eq(movieWatchlist.movieId, movies.id))
-    .where(eq(movieWatchlist.userId, userId));
+    .leftJoin(movieReviews, eq(movieWatchlist.movieId, movieReviews.movieId))
+    .where(eq(movieWatchlist.userId, userId))
+    .groupBy(movies.id);
 }
 
 export async function removeWatchlist(userId: number, movieId: number) {
@@ -73,16 +81,23 @@ export async function addReadlist(userId: number, bookId: number) {
 }
 
 export async function getUserReadlist(userId: number) {
-  return await db.select({
-    id: books.id,
-    title: books.title,
-    author: books.author,
-    genre: books.genre,
-    rating: books.rating
-  })
+  return await db
+    .select({
+      id: books.id,
+      title: books.title,
+      author: books.author,
+      publisher: books.publisher,
+      description: books.description,
+      genre: books.genre,
+      releaseYear: books.releaseYear,
+      coverUrl: books.coverUrl,
+      rating: sql<number>`COALESCE(AVG(${bookReviews.rating}), ${books.rating})`.mapWith(Number),
+    })
     .from(bookReadlist)
     .innerJoin(books, eq(bookReadlist.bookId, books.id))
-    .where(eq(bookReadlist.userId, userId));
+    .leftJoin(bookReviews, eq(books.id, bookReviews.bookId))
+    .where(eq(bookReadlist.userId, userId))
+    .groupBy(books.id);
 }
 
 export async function removeReadlist(userId: number, bookId: number) {

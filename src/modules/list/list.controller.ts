@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import { addWatchlist, getUserWatchlist, removeWatchlist, addReadlist, getUserReadlist, removeReadlist } from "./list.service";
 import { db } from "../../db";
-import { users } from "../../schema";
-import { eq } from "drizzle-orm";
+import { users, movieWatchlist, bookReadlist } from "../../schema";
+import { eq, and } from "drizzle-orm";
 
 export const addMovieToWatchlist = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -51,12 +51,23 @@ export const deleteMovieFromWatchlist = async (req: Request, res: Response): Pro
       return;
     }
 
+    const existing = await db
+      .select()
+      .from(movieWatchlist)
+      .where(and(eq(movieWatchlist.userId, userId), eq(movieWatchlist.movieId, movieId)));
+
+    if (existing.length === 0) {
+      res.status(404).json({ success: false, message: "Movie is not in watchlist" });
+      return;
+    }
+
     await removeWatchlist(userId, movieId);
     res.status(200).json({ success: true, message: "Movie removed from watchlist" });
   } catch (err: any) {
     res.status(500).json({ success: false, message: "Failed to remove movie from watchlist" });
   }
 };
+
 
 export const addBookToReadlist = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -102,6 +113,16 @@ export const deleteBookFromReadlist = async (req: Request, res: Response): Promi
 
     if (isNaN(userId) || isNaN(bookId)) {
       res.status(400).json({ success: false, message: "Invalid userId or bookId" });
+      return;
+    }
+
+    const existing = await db
+      .select()
+      .from(bookReadlist)
+      .where(and(eq(bookReadlist.userId, userId), eq(bookReadlist.bookId, bookId)));
+
+    if (existing.length === 0) {
+      res.status(404).json({ success: false, message: "Book is not in readlist" });
       return;
     }
 
