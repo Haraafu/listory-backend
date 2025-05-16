@@ -59,7 +59,7 @@ export const postMovie = async (req: Request, res: Response): Promise<void> => {
     res.status(201).json({ success: true, data: movie });
   } catch (error: any) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Failed to upload movie", error: error.message });
+    res.status(500).json({ success: false, message: "Failed to upload movie" });
   }
 };
 
@@ -110,7 +110,7 @@ export const putMovie = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({ success: true, data: updated });
   } catch (error: any) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Failed to update movie", error: error.message });
+    res.status(500).json({ success: false, message: "Failed to update movie" });
   }
 };
 
