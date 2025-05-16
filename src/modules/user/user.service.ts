@@ -1,7 +1,7 @@
 import { db } from "../../db";
 import { users } from "../../schema";
 import bcrypt from "bcrypt";
-import { eq } from "drizzle-orm";
+import { and, ne, eq } from "drizzle-orm";
 
 export async function registerUser(username: string, email: string, password: string) {
   const existing = await db.select().from(users).where(eq(users.email, email));
@@ -46,10 +46,20 @@ export async function getUserById(id: number) {
 }
 
 export async function updateUser(id: number, data: Partial<{ username: string; email: string }>) {
+  if (data.email) {
+    const existingEmail = await db.select().from(users)
+      .where(and(eq(users.email, data.email), ne(users.id, id))); 
+
+    if (existingEmail.length > 0) {
+      throw new Error("Email already used by another user");
+    }
+  }
+
   const result = await db.update(users)
     .set(data)
     .where(eq(users.id, id))
     .returning();
+    
   return result[0];
 }
 
