@@ -15,7 +15,7 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/movies", movieRoutes);
 app.use("/api/books", bookRoutes);
-app.use("/api/list", listRoutes);
+app.use("/api/lists", listRoutes);
 app.use("/api/reviews", reviewRoutes);
 
 app.get("/", (_: Request, res: Response) => {
