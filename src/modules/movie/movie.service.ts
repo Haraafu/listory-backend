@@ -9,11 +9,10 @@ export async function getAllMovies() {
       title: movies.title,
       director: movies.director,
       genre: movies.genre,
-      rating: movies.rating,
       releaseYear: movies.releaseYear,
       posterUrl: movies.posterUrl,
-      linkYoutube: movies.linkYoutube, 
-      averageRating: sql<number>`AVG(${movieReviews.rating})`.mapWith(Number),
+      linkYoutube: movies.linkYoutube,
+      rating: sql<number>`COALESCE(AVG(${movieReviews.rating}), ${movies.rating})`.mapWith(Number), // ✅ ini yang diganti
     })
     .from(movies)
     .leftJoin(movieReviews, eq(movies.id, movieReviews.movieId))
@@ -21,7 +20,20 @@ export async function getAllMovies() {
 }
 
 export async function getMovieById(id: number) {
-  const [movie] = await db.select().from(movies).where(eq(movies.id, id));
+  const [movie] = await db
+    .select({
+      id: movies.id,
+      title: movies.title,
+      director: movies.director,
+      genre: movies.genre,
+      releaseYear: movies.releaseYear,
+      posterUrl: movies.posterUrl,
+      linkYoutube: movies.linkYoutube,
+      rating: movies.rating,
+    })
+    .from(movies)
+    .where(eq(movies.id, id));
+
   if (!movie) return null;
 
   const [{ average }] = await db
@@ -29,7 +41,10 @@ export async function getMovieById(id: number) {
     .from(movieReviews)
     .where(eq(movieReviews.movieId, id));
 
-  return { ...movie, averageRating: average ?? 0 };
+  return {
+    ...movie,
+    rating: average ?? movie.rating, // ✅ timpa rating jika ada review
+  };
 }
 
 export async function createMovie(data: {
@@ -97,11 +112,10 @@ export async function searchAndFilterMovies(query: {
       title: movies.title,
       director: movies.director,
       genre: movies.genre,
-      rating: movies.rating,
+      rating: sql<number>`COALESCE(AVG(${movieReviews.rating}), ${movies.rating})`.mapWith(Number),
       releaseYear: movies.releaseYear,
       posterUrl: movies.posterUrl,
       linkYoutube: movies.linkYoutube, 
-      averageRating: sql<number>`AVG(${movieReviews.rating})`.mapWith(Number),
     })
     .from(movies)
     .leftJoin(movieReviews, eq(movies.id, movieReviews.movieId))

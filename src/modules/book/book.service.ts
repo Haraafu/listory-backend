@@ -11,10 +11,9 @@ export async function getAllBooks() {
       publisher: books.publisher,
       description: books.description,
       genre: books.genre,
-      rating: books.rating,
       releaseYear: books.releaseYear,
       coverUrl: books.coverUrl,
-      averageRating: sql<number>`AVG(${bookReviews.rating})`.mapWith(Number),
+      rating: sql<number>`COALESCE(AVG(${bookReviews.rating}), ${books.rating})`.mapWith(Number), // ✅ ganti ini
     })
     .from(books)
     .leftJoin(bookReviews, eq(books.id, bookReviews.bookId))
@@ -30,9 +29,9 @@ export async function getBookById(id: number) {
       publisher: books.publisher,
       description: books.description,
       genre: books.genre,
-      rating: books.rating,
       releaseYear: books.releaseYear,
       coverUrl: books.coverUrl,
+      rating: books.rating,
     })
     .from(books)
     .where(eq(books.id, id));
@@ -44,7 +43,10 @@ export async function getBookById(id: number) {
     .from(bookReviews)
     .where(eq(bookReviews.bookId, id));
 
-  return { ...book, averageRating: average ?? 0 };
+  return {
+    ...book,
+    rating: average ?? book.rating, 
+  };
 }
 
 export async function createBook(data: {
