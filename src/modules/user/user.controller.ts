@@ -84,6 +84,13 @@ export const getUserByIdHandler = async (
 
 export const updateUserById = async (req: Request, res: Response) => {
   const id = parseInt(req.params.id);
+  
+  const existing = await getUserById(id); 
+  if (!existing) {
+    res.status(404).json({ success: false, message: "User not found" });
+    return;
+  }
+
   const updated = await updateUser(id, req.body);
   res.status(200).json({ success: true, data: updated });
 };
