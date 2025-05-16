@@ -9,10 +9,12 @@ export async function getAllMovies() {
       title: movies.title,
       director: movies.director,
       genre: movies.genre,
+      cast: movies.cast,
+      synopsis: movies.synopsis,
       releaseYear: movies.releaseYear,
       posterUrl: movies.posterUrl,
       linkYoutube: movies.linkYoutube,
-      rating: sql<number>`COALESCE(AVG(${movieReviews.rating}), ${movies.rating})`.mapWith(Number), // ✅ ini yang diganti
+      rating: sql<number>`COALESCE(AVG(${movieReviews.rating}), ${movies.rating})`.mapWith(Number),
     })
     .from(movies)
     .leftJoin(movieReviews, eq(movies.id, movieReviews.movieId))
@@ -26,6 +28,8 @@ export async function getMovieById(id: number) {
       title: movies.title,
       director: movies.director,
       genre: movies.genre,
+      cast: movies.cast,
+      synopsis: movies.synopsis,
       releaseYear: movies.releaseYear,
       posterUrl: movies.posterUrl,
       linkYoutube: movies.linkYoutube,
@@ -43,7 +47,7 @@ export async function getMovieById(id: number) {
 
   return {
     ...movie,
-    rating: average ?? movie.rating, // ✅ timpa rating jika ada review
+    rating: average ?? movie.rating,
   };
 }
 
@@ -51,24 +55,24 @@ export async function createMovie(data: {
   title: string;
   director: string;
   genre: string[];
+  cast?: string[];
   synopsis?: string;
   releaseYear?: number;
   rating?: number;
   posterUrl?: string;
   linkYoutube?: string;
-  cast?: string[];
 }) {
   const result = await db.insert(movies).values({
     ...data,
-    linkYoutube: data.linkYoutube ?? null, 
+    linkYoutube: data.linkYoutube ?? null,
   }).returning();
   return result[0];
 }
 
-export async function updateMovie(id: number, data: Partial<typeof movies["_"]["columns"]>) {
+export async function updateMovie(id: number, data: Partial<typeof movies.$inferInsert>) {
   const result = await db.update(movies).set({
     ...data,
-    linkYoutube: data.linkYoutube ?? null, 
+    linkYoutube: data.linkYoutube ?? null,
   }).where(eq(movies.id, id)).returning();
   return result[0];
 }
@@ -112,10 +116,12 @@ export async function searchAndFilterMovies(query: {
       title: movies.title,
       director: movies.director,
       genre: movies.genre,
-      rating: sql<number>`COALESCE(AVG(${movieReviews.rating}), ${movies.rating})`.mapWith(Number),
+      cast: movies.cast,
+      synopsis: movies.synopsis,
       releaseYear: movies.releaseYear,
       posterUrl: movies.posterUrl,
-      linkYoutube: movies.linkYoutube, 
+      linkYoutube: movies.linkYoutube,
+      rating: sql<number>`COALESCE(AVG(${movieReviews.rating}), ${movies.rating})`.mapWith(Number),
     })
     .from(movies)
     .leftJoin(movieReviews, eq(movies.id, movieReviews.movieId))
@@ -123,9 +129,7 @@ export async function searchAndFilterMovies(query: {
     .where(whereClauses.length ? and(...whereClauses) : undefined);
 
   if (sort === "rating" || sort === "releaseYear") {
-    dbQuery.orderBy(
-      order === "desc" ? desc(movies[sort]) : asc(movies[sort])
-    );
+    dbQuery.orderBy(order === "desc" ? desc(movies[sort]) : asc(movies[sort]));
   }
 
   return await dbQuery;
