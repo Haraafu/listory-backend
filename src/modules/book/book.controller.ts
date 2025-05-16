@@ -57,7 +57,7 @@ export const postBook = async (req: Request, res: Response): Promise<void> => {
     res.status(201).json({ success: true, data: book });
   } catch (error: any) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Failed to upload book", error: error.message });
+    res.status(500).json({ success: false, message: "Failed to upload book" });
   }
 };
 
@@ -107,7 +107,7 @@ export const putBook = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({ success: true, data: updated });
   } catch (error: any) {
     console.error(error);
-    res.status(500).json({ success: false, message: "Failed to update book", error: error.message });
+    res.status(500).json({ success: false, message: "Failed to update book" });
   }
 };
 

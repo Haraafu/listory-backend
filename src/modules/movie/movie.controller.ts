@@ -72,7 +72,7 @@ export const postMovie = async (req: Request, res: Response): Promise<void> => {
     res.status(201).json({ success: true, data: movie });
   } catch (error: any) {
     console.error("Upload error:", error);
-    res.status(500).json({ success: false, message: "Upload failed", error: error.message });
+    res.status(500).json({ success: false, message: "Upload failed" });
   }
 };
 
