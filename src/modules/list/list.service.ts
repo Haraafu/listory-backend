@@ -1,9 +1,31 @@
 import { db } from "../../db";
-import { movieWatchlist, bookReadlist, movies, books } from "../../schema";
+import { movieWatchlist, bookReadlist, movies, books, users } from "../../schema";
 import { and, eq } from "drizzle-orm";
 
 export async function addWatchlist(userId: number, movieId: number) {
-  const result = await db.insert(movieWatchlist).values({ userId, movieId }).returning();
+  const user = await db.select().from(users).where(eq(users.id, userId));
+  if (user.length === 0) {
+    throw new Error("User not found");
+  }
+
+  const movie = await db.select().from(movies).where(eq(movies.id, movieId));
+  if (movie.length === 0) {
+    throw new Error("Movie not found");
+  }
+
+  const existing = await db
+    .select()
+    .from(movieWatchlist)
+    .where(and(eq(movieWatchlist.userId, userId), eq(movieWatchlist.movieId, movieId)));
+
+  if (existing.length > 0) {
+    throw new Error("Movie already in watchlist");
+  }
+
+  const result = await db.insert(movieWatchlist)
+    .values({ userId, movieId })
+    .returning();
+
   return result[0];
 }
 
@@ -26,7 +48,27 @@ export async function removeWatchlist(userId: number, movieId: number) {
 }
 
 export async function addReadlist(userId: number, bookId: number) {
-  const result = await db.insert(bookReadlist).values({ userId, bookId }).returning();
+  const user = await db.select().from(users).where(eq(users.id, userId));
+  if (user.length === 0) {
+    throw new Error("User not found");
+  }
+
+  const book = await db.select().from(books).where(eq(books.id, bookId));
+  if (book.length === 0) {
+    throw new Error("Book not found");
+  }
+
+  const existing = await db.select().from(bookReadlist)
+    .where(and(eq(bookReadlist.userId, userId), eq(bookReadlist.bookId, bookId)));
+
+  if (existing.length > 0) {
+    throw new Error("Book already in readlist");
+  }
+
+  const result = await db.insert(bookReadlist)
+    .values({ userId, bookId })
+    .returning();
+
   return result[0];
 }
 
