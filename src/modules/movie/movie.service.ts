@@ -40,7 +40,8 @@ export async function createMovie(data: {
   releaseYear?: number;
   rating?: number;
   posterUrl?: string;
-  linkYoutube?: string; 
+  linkYoutube?: string;
+  cast?: string[];
 }) {
   const result = await db.insert(movies).values({
     ...data,

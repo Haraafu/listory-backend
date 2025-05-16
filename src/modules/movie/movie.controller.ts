@@ -53,18 +53,20 @@ export const postMovie = async (req: Request, res: Response): Promise<void> => {
       synopsis,
       releaseYear,
       rating,
-      linkYoutube
+      linkYoutube,
+      cast
     } = req.body;
 
     const movie = await createMovie({
       title,
       director,
-      genre: genre.split(',').map(g => g.trim()),
+      genre: genre.split(',').map((g: string) => g.trim()),
       synopsis,
       releaseYear: releaseYear ? Number(releaseYear) : undefined,
       rating: rating ? Number(rating) : undefined,
-      posterUrl, 
+      posterUrl,
       linkYoutube: linkYoutube ?? null,
+      cast: cast ? cast.split(',').map((c: string) => c.trim()) : [],
     });
 
     res.status(201).json({ success: true, data: movie });
