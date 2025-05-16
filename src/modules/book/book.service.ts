@@ -8,6 +8,7 @@ export async function getAllBooks() {
       id: books.id,
       title: books.title,
       author: books.author,
+      publisher: books.publisher,
       genre: books.genre,
       rating: books.rating,
       releaseYear: books.releaseYear,
@@ -20,7 +21,21 @@ export async function getAllBooks() {
 }
 
 export async function getBookById(id: number) {
-  const [book] = await db.select().from(books).where(eq(books.id, id));
+  const [book] = await db
+    .select({
+      id: books.id,
+      title: books.title,
+      author: books.author,
+      publisher: books.publisher,
+      genre: books.genre,
+      rating: books.rating,
+      releaseYear: books.releaseYear,
+      coverUrl: books.coverUrl,
+      description: books.description,
+    })
+    .from(books)
+    .where(eq(books.id, id));
+
   if (!book) return null;
 
   const [{ average }] = await db
@@ -34,6 +49,7 @@ export async function getBookById(id: number) {
 export async function createBook(data: {
   title: string;
   author: string;
+  publisher?: string;
   synopsis?: string;
   releaseYear?: number;
   rating?: number;
@@ -57,12 +73,13 @@ export async function deleteBook(id: number) {
 export async function searchAndFilterBooks(query: {
   search?: string;
   genre?: string;
+  publisher?: string;
   releaseYear?: number;
   minRating?: number;
   sort?: "releaseYear" | "rating";
   order?: "asc" | "desc";
 }) {
-  const { search, genre, releaseYear, minRating, sort, order } = query;
+  const { search, genre, publisher, releaseYear, minRating, sort, order } = query;
 
   const whereClauses = [];
 
@@ -72,6 +89,10 @@ export async function searchAndFilterBooks(query: {
 
   if (genre) {
     whereClauses.push(sql`${sql.raw(`'${genre}'`)} = ANY (${books.genre})`);
+  }
+
+  if (publisher) {
+    whereClauses.push(ilike(books.publisher, `%${publisher}%`));
   }
 
   if (releaseYear) {
@@ -87,6 +108,7 @@ export async function searchAndFilterBooks(query: {
       id: books.id,
       title: books.title,
       author: books.author,
+      publisher: books.publisher,
       genre: books.genre,
       rating: books.rating,
       releaseYear: books.releaseYear,
@@ -106,7 +128,6 @@ export async function searchAndFilterBooks(query: {
 
   return await dbQuery;
 }
-
 
 export async function getBookAverageRating(bookId: number) {
   const result = await db

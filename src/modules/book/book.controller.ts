@@ -20,26 +20,51 @@ export const getBook = async (req: Request, res: Response): Promise<void> => {
 export const postBook = async (req: Request, res: Response): Promise<void> => {
   try {
     const file = req.file;
-    let coverUrl: string | undefined = undefined;
+    let coverUrl: string | undefined;
 
     if (file) {
+      const base64File = file.buffer.toString("base64");
+      const mimeType = file.mimetype;
+
       const uploadResponse = await imagekit.upload({
-        file: file.buffer,
+        file: `data:${mimeType};base64,${base64File}`,
         fileName: file.originalname,
         folder: "/listory/books",
       });
+
       coverUrl = uploadResponse.url;
     }
 
+    // Destructure & parse
+    const {
+      title,
+      author,
+      publisher,
+      genre,
+      releaseYear,
+      rating,
+      synopsis
+    } = req.body;
+
     const book = await createBook({
-      ...req.body,
-      coverUrl,
+      title,
+      author,
+      publisher,
+      synopsis,
+      genre: genre?.split(',').map((g: string) => g.trim()) ?? [],
+      releaseYear: releaseYear ? Number(releaseYear) : undefined,
+      rating: rating ? Number(rating) : undefined,
+      coverUrl: coverUrl ?? "https://example.com/default-cover.jpg",
     });
 
     res.status(201).json({ success: true, data: book });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: "Failed to upload book" });
+  } catch (error: any) {
+    console.error("Book upload error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to upload book",
+      error: error?.message || "Unknown error"
+    });
   }
 };
 
