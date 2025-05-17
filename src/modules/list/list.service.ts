@@ -42,6 +42,7 @@ export async function getUserWatchlist(userId: number) {
       rating: sql<number>`COALESCE(AVG(${movieReviews.rating}), ${movies.rating})`.mapWith(Number),
       posterUrl: movies.posterUrl,
       linkYoutube: movies.linkYoutube,
+      isAdded: movieWatchlist.isAdded,
     })
     .from(movieWatchlist)
     .innerJoin(movies, eq(movieWatchlist.movieId, movies.id))
@@ -92,6 +93,7 @@ export async function getUserReadlist(userId: number) {
       releaseYear: books.releaseYear,
       coverUrl: books.coverUrl,
       rating: sql<number>`COALESCE(AVG(${bookReviews.rating}), ${books.rating})`.mapWith(Number),
+      isAdded: bookReadlist.isAdded,
     })
     .from(bookReadlist)
     .innerJoin(books, eq(bookReadlist.bookId, books.id))
