@@ -30,7 +30,7 @@ export async function addWatchlist(userId: number, movieId: number) {
 }
 
 export async function getUserWatchlist(userId: number) {
-  return await db
+  const results = await db
     .select({
       id: movies.id,
       title: movies.title,
@@ -42,13 +42,14 @@ export async function getUserWatchlist(userId: number) {
       rating: sql<number>`COALESCE(AVG(${movieReviews.rating}), ${movies.rating})`.mapWith(Number),
       posterUrl: movies.posterUrl,
       linkYoutube: movies.linkYoutube,
-      isAdded: movieWatchlist.isAdded,
     })
     .from(movieWatchlist)
     .innerJoin(movies, eq(movieWatchlist.movieId, movies.id))
     .leftJoin(movieReviews, eq(movieWatchlist.movieId, movieReviews.movieId))
     .where(eq(movieWatchlist.userId, userId))
     .groupBy(movies.id);
+
+  return results.map(movie => ({ ...movie, isAdded: true }));
 }
 
 export async function removeWatchlist(userId: number, movieId: number) {
@@ -82,7 +83,7 @@ export async function addReadlist(userId: number, bookId: number) {
 }
 
 export async function getUserReadlist(userId: number) {
-  return await db
+  const results = await db
     .select({
       id: books.id,
       title: books.title,
@@ -93,13 +94,14 @@ export async function getUserReadlist(userId: number) {
       releaseYear: books.releaseYear,
       coverUrl: books.coverUrl,
       rating: sql<number>`COALESCE(AVG(${bookReviews.rating}), ${books.rating})`.mapWith(Number),
-      isAdded: bookReadlist.isAdded,
     })
     .from(bookReadlist)
     .innerJoin(books, eq(bookReadlist.bookId, books.id))
     .leftJoin(bookReviews, eq(books.id, bookReviews.bookId))
     .where(eq(bookReadlist.userId, userId))
     .groupBy(books.id);
+
+  return results.map(book => ({ ...book, isAdded: true }));
 }
 
 export async function removeReadlist(userId: number, bookId: number) {
